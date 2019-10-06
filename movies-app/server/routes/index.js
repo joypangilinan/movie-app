@@ -1,4 +1,5 @@
 const apiRoute = require('./apis');
+const publicRoute = require('./apis/public');
 
 const init = (server) => {
     server.get('*', function (req, res, next) {
@@ -7,6 +8,7 @@ const init = (server) => {
     });
 
     server.use('/movies', apiRoute);
+    server.use('/', publicRoute)
 }
 module.exports = {
     init: init

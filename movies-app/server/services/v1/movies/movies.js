@@ -3,7 +3,6 @@ var bodyParser = require('body-parser')
 const mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectId
 const User = require('../../../models/user');
-const _ = require('lodash');
 
 
 const displayAll = (req, res, next) => {
