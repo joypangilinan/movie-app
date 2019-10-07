@@ -7,19 +7,19 @@ const User = require('../../../models/user');
 
 const displayAll = (req, res, next) => {
     // Declaring variable
-    var perPage = 10
+    var perPage = 25
     var page = parseInt(req.query.page) || 1
-            
-     mongoose.connection.db
+
+    mongoose.connection.db
         .collection('movieDetails')
-        .find({},{projection: {_id: 0, title: 1, poster: 1}})
+        .find({}, { projection: { _id: 0, title: 1, poster: 1 } })
         .skip(perPage * (page - 1))
         .limit(perPage)
-        .toArray(function(err, movie){
-            if(err) throw err
+        .toArray(function (err, movie) {
+            if (err) throw err
             res.json(movie)
         })
-    }
+}
 
 const moviesById = (req, res, next) => {
     mongoose.connection.db
@@ -32,21 +32,27 @@ const moviesById = (req, res, next) => {
                 return next(err)
             } else {
                 const string = movie.poster;
-                let delimiter = /[/]+\s*/;
-                let sentences = string.split(delimiter)
-                let poster = "https://m.media-amazon.com"+"/"+sentences[2]+"/"+sentences[3]+"/"+sentences[4]
+                var poster
+                if (string == null) {
+                    poster = 'null'
+                } else {
+                    let delimiter = /[/]+\s*/;
+                    let sentences = string.split(delimiter)
+                    poster = "https://m.media-amazon.com" + "/" + sentences[2] + "/" + sentences[3] + "/" + sentences[4]
+                }
                 var moviedetails = {
                     title: movie.title,
                     plot: movie.plot,
                     poster: poster,
                     year: movie.year,
-                    genres:movie.genres,
+                    genres: movie.genres,
                     director: movie.director,
                     awards: movie.awards
                 }
                 res.json(moviedetails)
             }
-        })
+        }, (err) => next(err))
+        .catch((err) => next(err))
 }
 
 const viewcountries = (req, res, next) => {
@@ -61,7 +67,8 @@ const viewcountries = (req, res, next) => {
             } else {
                 res.json(movie.countries)
             }
-        })
+        }, (err) => next(err))
+        .catch((err) => next(err))
 }
 
 const viewwriters = (req, res, next) => {
@@ -76,13 +83,14 @@ const viewwriters = (req, res, next) => {
             } else {
                 res.json(movie.writers)
             }
-        })
+        }, (err) => next(err))
+        .catch((err) => next(err))
 }
 
 const writermovie = (req, res, next) => {
     mongoose.connection.db
         .collection('movieDetails')
-        .find({writers: req.params.writerName}, {projection: {_id: 0, title: 1, poster: 1, writers: 1}})
+        .find({ writers: req.params.writerName }, { projection: { _id: 0, title: 1, poster: 1, writers: 1 } })
         .toArray()
         .then(movie => {
             if (movie == null) {
@@ -92,7 +100,8 @@ const writermovie = (req, res, next) => {
             } else {
                 res.json(movie)
             }
-        })
+        }, (err) => next(err))
+        .catch((err) => next(err))
 }
 
 
