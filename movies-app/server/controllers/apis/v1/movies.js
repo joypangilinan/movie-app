@@ -10,6 +10,7 @@ router.get('/:movieId/countries', moviesService.viewcountries)
 router.get('/:movieId/writers', moviesService.viewwriters)
 router.get('/writers/:writerName', moviesService.writermovie)
 router.post('/', movieSearchService.search)
+router.post('/favourite/:movieId', moviesService.favourite)
 
 
 module.exports = router

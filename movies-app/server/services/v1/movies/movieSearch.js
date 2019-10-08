@@ -16,6 +16,7 @@ const search = (req, res) => {
                 .skip(perPage * (page - 1))
                 .limit(perPage)
                 .toArray(function (err, movie) {
+                    posterReplace(movie)
                     if (movie.length == 0) {
                         noMatch = "No movies match that query, please try again."
                         res.json(noMatch)
@@ -34,6 +35,7 @@ const search = (req, res) => {
                 .skip(perPage * (page - 1))
                 .limit(perPage)
                 .toArray(function (err, movie) {
+                    posterReplace(movie)
                     if (movie.length == 0) {
                         noMatch = "No movies match that query, please try again."
                         res.json(noMatch)
@@ -52,6 +54,7 @@ const search = (req, res) => {
                 .skip(perPage * (page - 1))
                 .limit(perPage)
                 .toArray(function (err, movie) {
+                    posterReplace(movie)
                     if (movie.length == 0) {
                         noMatch = "No movies match that query, please try again."
                         res.json(noMatch)
@@ -70,6 +73,7 @@ const search = (req, res) => {
                 .skip(perPage * (page - 1))
                 .limit(perPage)
                 .toArray(function (err, movie) {
+                    posterReplace(movie)
                     if (movie.length == 0) {
                         noMatch = "No movies match that query, please try again."
                         res.json(noMatch)
@@ -85,7 +89,15 @@ const search = (req, res) => {
 
 function escapeRegex(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-};
+}
+function posterReplace(poster) {
+    poster.forEach(result => {
+        if (result.poster != null) {
+            result.poster = result.poster.replace("http://ia.media-imdb.com", "https://m.media-amazon.com")
+        }
+    })
+    return poster
+}
 
 
 module.exports = {

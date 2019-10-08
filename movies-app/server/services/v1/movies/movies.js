@@ -2,7 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser')
 const mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectId
-const User = require('../../../models/user');
+const Fav = require('../../../models/favourite');
 
 
 const displayAll = (req, res, next) => {
@@ -11,15 +11,34 @@ const displayAll = (req, res, next) => {
     var page = parseInt(req.query.page) || 1
 
     mongoose.connection.db
-        .collection('movieDetails')
-        .find({}, { projection: { _id: 0, title: 1, poster: 1 } })
-        .skip(perPage * (page - 1))
-        .limit(perPage)
-        .toArray(function (err, movie) {
-            if (err) throw err
-            res.json(movie)
+        .collection('movieDetails').countDocuments({})
+        .then(counts => {
+            mongoose.connection.db
+                .collection('movieDetails')
+                .find({}, { projection: { "title": 1, "poster": 1, "year": 1, "genres": 1, "imdb.votes": 1, "imdb.rating": 1, "tomato.rating": 1, "rated": 1, "plot": 1 } })
+                .skip(perPage * (page - 1))
+                .limit(perPage)
+                .toArray(function (err, movie) {
+                    if (err) throw err
+                    posterReplace(movie)
+                    var movies = {
+                        movie: movie,
+                        total: counts
+                    }
+                    res.json(movies)
+                })
         })
 }
+
+function posterReplace(poster) {
+    poster.forEach(result => {
+        if (result.poster != null) {
+            result.poster = result.poster.replace("http://ia.media-imdb.com", "https://m.media-amazon.com")
+        }
+    })
+    return poster
+}
+
 
 const moviesById = (req, res, next) => {
     mongoose.connection.db
@@ -104,11 +123,29 @@ const writermovie = (req, res, next) => {
         .catch((err) => next(err))
 }
 
+const favourite = (req, res, next) => {
+    var fav = new Fav({
+        movieId: req.params.movieId,
+        userId: "user101"
+    })
+    // mongoose.connection.db
+    //     .collection('favourites')
+    //     .findOne({ _id: ObjectId(req.params.movieId) })
+    Fav.create(fav)
+        .then((fav) => {
+            console.log('favourite added successfully ')
+            res.json(fav)
+        }, (err) => next(err))
+        .catch((err) => next(err))
+
+}
+
 
 module.exports = {
     displayAll: displayAll,
     moviesById: moviesById,
     viewcountries: viewcountries,
     viewwriters: viewwriters,
-    writermovie: writermovie
+    writermovie: writermovie,
+    favourite: favourite
 }
