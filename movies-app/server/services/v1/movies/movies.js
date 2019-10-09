@@ -128,9 +128,6 @@ const favourite = (req, res, next) => {
         movieId: req.params.movieId,
         userId: "user101"
     })
-    // mongoose.connection.db
-    //     .collection('favourites')
-    //     .findOne({ _id: ObjectId(req.params.movieId) })
     Fav.create(fav)
         .then((fav) => {
             console.log('favourite added successfully ')
@@ -140,6 +137,17 @@ const favourite = (req, res, next) => {
 
 }
 
+const rand = (req, res, next) => {
+    mongoose.connection.db
+        .collection('movieDetails')
+        .aggregate([{ $sample: { size: 4 } }])
+        .toArray(function (err, movie) {
+            if (err) throw err
+            posterReplace(movie)
+            res.json(movie)
+        })
+}
+
 
 module.exports = {
     displayAll: displayAll,
@@ -147,5 +155,6 @@ module.exports = {
     viewcountries: viewcountries,
     viewwriters: viewwriters,
     writermovie: writermovie,
-    favourite: favourite
+    favourite: favourite,
+    rand: rand
 }

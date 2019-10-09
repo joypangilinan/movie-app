@@ -4,5 +4,4 @@ const express = require('express');
 let router = express.Router();
 
 router.use('/', publicController);
-
 module.exports = router;

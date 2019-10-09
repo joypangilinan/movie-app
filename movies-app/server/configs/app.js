@@ -8,6 +8,11 @@ var session = require('express-session');
 var dotenv = require('dotenv');
 var passport = require('passport');
 var Auth0Strategy = require('passport-auth0');
+const jwt = require('express-jwt');
+const jwtAuthz = require('express-jwt-authz');
+const jwksRsa = require('jwks-rsa');
+require('dotenv').config();
+
 // var flash = require('connect-flash');
 // const jwt = require('express-jwt');
 
@@ -65,6 +70,28 @@ module.exports = function () {
         };
 
         server.use(cors(corsOptions));
+
+        server.use(function (req, res, next) {
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+        });
+
+        const checkJwt = jwt({
+            // Dynamically provide a signing key based on the [Key ID](https://tools.ietf.org/html/rfc7515#section-4.1.4) header parameter ("kid") and the signing keys provided by the JWKS endpoint.
+            secret: jwksRsa.expressJwtSecret({
+                cache: true,
+                rateLimit: true,
+                jwksRequestsPerMinute: 5,
+                jwksUri: `https://backend-wc.auth0.com/.well-known/jwks.json`
+            }),
+
+            // Validate the audience and the issuer.
+            audience: `localhost:3000/home`,
+            issuer: `https://backend-wc.auth0.com/`,
+            algorithms: ['RS256']
+        });
         // var sess = {
         //     secret: 'CHANGE THIS TO A RANDOM SECRET',
         //     cookie: {},
@@ -90,6 +117,11 @@ module.exports = function () {
         // });
 
         // app.use(session(sess));
+        server.get('/home', checkJwt, function (req, res) {
+            res.json({
+                message: 'Hello from a private endpoint! You need to be authenticated to see this.'
+            });
+        });
 
         const { connection } = mongoose
         //connect the database

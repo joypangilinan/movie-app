@@ -10,20 +10,27 @@ const search = (req, res) => {
         if (req.query.search) {
 
             const regex = new RegExp(escapeRegex(req.query.search), 'gi');
+            // Declaring variable
             mongoose.connection.db
-                .collection('movieDetails')
-                .find({ title: regex }, { projection: { _id: 0, title: 1, poster: 1 } })
-                .skip(perPage * (page - 1))
-                .limit(perPage)
-                .toArray(function (err, movie) {
-                    posterReplace(movie)
-                    if (movie.length == 0) {
-                        noMatch = "No movies match that query, please try again."
-                        res.json(noMatch)
-                    } else {
-                        res.json(movie)
-                    }
+                .collection('movieDetails').countDocuments({})
+                .then(counts => {
+                    mongoose.connection.db
+                        .collection('movieDetails')
+                        .find({ title: regex }, { projection: { "title": 1, "poster": 1, "year": 1, "genres": 1, "imdb.votes": 1, "imdb.rating": 1, "tomato.rating": 1, "rated": 1, "plot": 1 } })
+                        .skip(perPage * (page - 1))
+                        .limit(perPage)
+                        .toArray(function (err, movie) {
+                            if (err) throw err
+                            posterReplace(movie)
+                            var movies = {
+                                movie: movie,
+                                total: counts
+                            }
+                            res.json(movies)
+                            console.log(req)
+                        })
                 })
+
         }
     } else if (req.query.q == 'actor') {
         var page = parseInt(req.query.page) || 1
