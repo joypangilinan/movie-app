@@ -30,14 +30,6 @@ const displayAll = (req, res, next) => {
         })
 }
 
-function posterReplace(poster) {
-    poster.forEach(result => {
-        if (result.poster != null) {
-            result.poster = result.poster.replace("http://ia.media-imdb.com", "https://m.media-amazon.com")
-        }
-    })
-    return poster
-}
 
 
 const moviesById = (req, res, next) => {
@@ -117,6 +109,7 @@ const writermovie = (req, res, next) => {
                 err.status = 404
                 return next(err)
             } else {
+                posterReplace(movie)
                 res.json(movie)
             }
         }, (err) => next(err))
@@ -124,16 +117,35 @@ const writermovie = (req, res, next) => {
 }
 
 const favourite = (req, res, next) => {
+
     var fav = new Fav({
         movieId: req.params.movieId,
-        userId: "user101"
+        userId: req.user.sub
     })
-    Fav.create(fav)
-        .then((fav) => {
-            console.log('favourite added successfully ')
-            res.json(fav)
-        }, (err) => next(err))
-        .catch((err) => next(err))
+    Fav.findOne({ userId: req.user.sub })
+        .then(favi => {
+            if (favi == null) {
+                Fav.create(fav)
+                    .then((fav) => {
+                        console.log('favourite added successfully ')
+                        res.json(fav)
+                    }, (err) => next(err))
+                    .catch((err) => next(err))
+            } else {
+                // res.json(favi._id)
+                Fav.findByIdAndUpdate({ _id: ObjectId(favi._id) },
+                    { $addToSet: { movieId: req.params.movieId } }, { multi: true })
+                    .then(resp => {
+                        res.json(resp)
+                    })
+            }
+        })
+    // Fav.create(fav)
+    //     .then((fav) => {
+    //         console.log('favourite added successfully ')
+    //         res.json(fav)
+    //     }, (err) => next(err))
+    //     .catch((err) => next(err))
 
 }
 
@@ -148,6 +160,21 @@ const rand = (req, res, next) => {
         })
 }
 
+const displayFavourite = (req, res, next) => {
+    Fav.findOne({ userId: req.user.sub })
+        .then(result => {
+            res.json(result)
+        })
+}
+
+function posterReplace(poster) {
+    poster.forEach(result => {
+        if (result.poster != null) {
+            result.poster = result.poster.replace("http://ia.media-imdb.com", "https://m.media-amazon.com")
+        }
+    })
+    return poster
+}
 
 module.exports = {
     displayAll: displayAll,
@@ -156,5 +183,6 @@ module.exports = {
     viewwriters: viewwriters,
     writermovie: writermovie,
     favourite: favourite,
-    rand: rand
+    rand: rand,
+    displayFavourite: displayFavourite
 }

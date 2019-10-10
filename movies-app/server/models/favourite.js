@@ -2,10 +2,7 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
 var Favourite = new Schema({
-    movieId: {
-        type: String,
-        required: true
-    },
+    movieId: [],
     userId: {
         type: String,
         required: true
