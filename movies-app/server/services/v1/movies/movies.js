@@ -3,7 +3,7 @@ var bodyParser = require('body-parser')
 const mongoose = require('mongoose');
 var ObjectId = require('mongodb').ObjectId
 const Fav = require('../../../models/favourite');
-
+const Comment = require('../../../models/comment');
 
 const displayAll = (req, res, next) => {
     // Declaring variable
@@ -15,7 +15,7 @@ const displayAll = (req, res, next) => {
         .then(counts => {
             mongoose.connection.db
                 .collection('movieDetails')
-                .find({}, { projection: { "title": 1, "poster": 1, "year": 1, "genres": 1, "imdb.votes": 1, "imdb.rating": 1, "tomato.rating": 1, "rated": 1, "plot": 1 } })
+                .find({})
                 .skip(perPage * (page - 1))
                 .limit(perPage)
                 .toArray(function (err, movie) {
@@ -118,8 +118,10 @@ const writermovie = (req, res, next) => {
 
 const favourite = (req, res, next) => {
 
+    // var obj = `ObjectId("${req.params.movieId}")`
+
     var fav = new Fav({
-        movieId: req.params.movieId,
+        movieId: ObjectId(req.params.movieId),
         userId: req.user.sub
     })
     Fav.findOne({ userId: req.user.sub })
@@ -134,18 +136,12 @@ const favourite = (req, res, next) => {
             } else {
                 // res.json(favi._id)
                 Fav.findByIdAndUpdate({ _id: ObjectId(favi._id) },
-                    { $addToSet: { movieId: req.params.movieId } }, { multi: true })
+                    { $addToSet: { movieId: ObjectId(req.params.movieId) } }, { multi: true })
                     .then(resp => {
                         res.json(resp)
                     })
             }
         })
-    // Fav.create(fav)
-    //     .then((fav) => {
-    //         console.log('favourite added successfully ')
-    //         res.json(fav)
-    //     }, (err) => next(err))
-    //     .catch((err) => next(err))
 
 }
 
@@ -161,9 +157,17 @@ const rand = (req, res, next) => {
 }
 
 const displayFavourite = (req, res, next) => {
+
     Fav.findOne({ userId: req.user.sub })
         .then(result => {
-            res.json(result)
+            // res.json(result.movieId)
+            mongoose.connection.db
+                .collection('movieDetails')
+                .find({ _id: { $in: result.movieId } })
+                .toArray()
+                .then(result => {
+                    res.json(result)
+                })
         })
 }
 
@@ -176,6 +180,40 @@ function posterReplace(poster) {
     return poster
 }
 
+const comment = (req, res, next) => {
+    var comment = new Comment({
+        movieId: ObjectId(req.params.movieId),
+        userId: req.user.sub,
+        ...req.body
+    })
+    Comment.findOne({ userId: req.user.sub })
+        .then(com => {
+            if (com == null) {
+                Comment.create(comment)
+                    .then((result) => {
+                        console.log('comment added successfully ')
+                        res.json(result)
+                    }, (err) => next(err))
+                    .catch((err) => next(err))
+            } else {
+                // res.json(com._id)
+                Comment.findByIdAndUpdate({ _id: ObjectId(com._id) },
+                    { $addToSet: req.body }, { multi: true })
+                    .then(resp => {
+                        res.json(resp)
+                        console.log('added comment successfully')
+                    })
+            }
+        })
+}
+
+const commentdisplay = (req, res, next) => {
+    Comment.find({ movieId: req.params.movieId })
+        .then(result => {
+            res.json(result)
+        })
+}
+
 module.exports = {
     displayAll: displayAll,
     moviesById: moviesById,
@@ -184,5 +222,7 @@ module.exports = {
     writermovie: writermovie,
     favourite: favourite,
     rand: rand,
-    displayFavourite: displayFavourite
+    displayFavourite: displayFavourite,
+    comment: comment,
+    commentdisplay: commentdisplay
 }

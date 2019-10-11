@@ -7,14 +7,15 @@ const authadmin = require('../../../middlewares/adminauth');
 let router = express.Router();
 
 router.get('/', auth.checkJwt, moviesService.displayAll)
-router.get('/:movieId', moviesService.moviesById)
-router.get('/:movieId/countries', moviesService.viewcountries)
-router.get('/:movieId/writers', moviesService.viewwriters)
-router.get('/writers/:writerName', moviesService.writermovie)
-router.post('/', authadmin.checkJwtadmin, movieSearchService.search)
+router.get('/:movieId', auth.checkJwt, moviesService.moviesById)
+router.get('/:movieId/countries', auth.checkJwt, moviesService.viewcountries)
+router.get('/:movieId/writers', auth.checkJwt, moviesService.viewwriters)
+router.get('/writers/:writerName', auth.checkJwt, moviesService.writermovie)
+router.post('/', auth.checkJwt, movieSearchService.search)
 router.post('/favourite/:movieId', auth.checkJwt, moviesService.favourite)
-router.get('/random/movie', moviesService.rand)
+router.get('/random/movie', auth.checkJwt, moviesService.rand)
 router.get('/favourites/favorite', auth.checkJwt, moviesService.displayFavourite)
-
+router.post('/comment/:movieId', auth.checkJwt, moviesService.comment)
+router.get('/comment/display/:movieId', auth.checkJwt, moviesService.commentdisplay)
 
 module.exports = router

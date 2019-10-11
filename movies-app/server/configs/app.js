@@ -35,11 +35,11 @@ module.exports = function () {
             extended: false
         }));
 
-        const corsOptions = {
-            origin: 'http://localhost:3000'
-        };
+        // const corsOptions = {
+        //     origin: 'http://localhost:3000'
+        // };
 
-        server.use(cors(corsOptions));
+        server.use(cors());
 
         server.use(function (req, res, next) {
             res.header("Access-Control-Allow-Origin", "*");

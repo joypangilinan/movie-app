@@ -31,7 +31,7 @@ const search = (req, res) => {
                             var user = req.user.sub
                             var s = user.match(/\d+/gi)
                             res.json(movies)
-                            console.log(typeof s)
+                            console.log(s)
                         })
                 })
 
