@@ -15,7 +15,7 @@ router.post('/', auth.checkJwt, movieSearchService.search)
 router.post('/favourite/:movieId', auth.checkJwt, moviesService.favourite)
 router.get('/random/movie', auth.checkJwt, moviesService.rand)
 router.get('/favourites/favorite', auth.checkJwt, moviesService.displayFavourite)
-router.post('/comment/:movieId', auth.checkJwt, moviesService.comment)
-router.get('/comment/display/:movieId', auth.checkJwt, moviesService.commentdisplay)
+router.post('/comment/:movieId', moviesService.comment)
+router.get('/comment/display/:movieId', moviesService.commentdisplay)
 
 module.exports = router

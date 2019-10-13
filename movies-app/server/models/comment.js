@@ -1,16 +1,27 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
-var Comment = new Schema({
-    movieId: {
+var Comments = new Schema({
+    comment: {
         type: String,
-        required: true
+        trim: true
     },
     userId: {
         type: String,
         required: true
     },
-    comment: [],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+})
+
+var Comment = new Schema({
+    movieId: {
+        type: String,
+        required: true
+    },
+    comment: [Comments],
     createdAt: {
         type: Date,
         default: Date.now

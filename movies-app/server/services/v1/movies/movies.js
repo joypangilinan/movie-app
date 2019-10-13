@@ -181,28 +181,59 @@ function posterReplace(poster) {
 }
 
 const comment = (req, res, next) => {
+    // var comment = new Comment({
+    //     movieId: ObjectId(req.params.movieId),
+    //     userId: req.user.sub,
+    //     ...req.body
+    // })
+    // Comment.findOne({ userId: req.user.sub })
+    //     .then(com => {
+    //         if (com == null) {
+    //             Comment.create(comment)
+    //                 .then((result) => {
+    //                     console.log('comment added successfully ')
+    //                     res.json(result)
+    //                 }, (err) => next(err))
+    //                 .catch((err) => next(err))
+    //         } else {
+    //             // res.json(com._id)
+    //             Comment.findByIdAndUpdate({ _id: ObjectId(com._id) },
+    //                 { $addToSet: req.body }, { multi: true })
+    //                 .then(resp => {
+    //                     res.json(resp)
+    //                     console.log('added comment successfully')
+    //                 })
+    //         }
+    //     })
     var comment = new Comment({
-        movieId: ObjectId(req.params.movieId),
-        userId: req.user.sub,
-        ...req.body
+        movieId: ObjectId(req.params.movieId)
     })
-    Comment.findOne({ userId: req.user.sub })
+    Comment.findOne({ movieId: req.params.movieId })
         .then(com => {
             if (com == null) {
                 Comment.create(comment)
                     .then((result) => {
-                        console.log('comment added successfully ')
-                        res.json(result)
+                        req.body.userId = 'password'
+                        result.comment.push(req.body)
+                        result.save()
+                        .then(results => {
+                            console.log('comment added successfully ')
+                            res.json(results)
+                        })
+                        
                     }, (err) => next(err))
                     .catch((err) => next(err))
             } else {
                 // res.json(com._id)
-                Comment.findByIdAndUpdate({ _id: ObjectId(com._id) },
-                    { $addToSet: req.body }, { multi: true })
-                    .then(resp => {
-                        res.json(resp)
-                        console.log('added comment successfully')
+                Comment.findOne({ movieId: req.params.movieId })
+                .then(com => {
+                    req.body.userId = 'password'
+                    com.comment.push(req.body)
+                    com.save()
+                    .then(comment =>{
+                        res.json(comment)
                     })
+                })
             }
         })
 }
