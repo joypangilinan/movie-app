@@ -27,9 +27,6 @@ module.exports = function () {
         server.set('port', config.port);
         server.set('hostname', config.hostname);
 
-        // server.use(logger('dev'));
-        // server.use(cookieParser());
-        // add middleware to parse the json
         server.use(bodyParser.json())
         server.use(bodyParser.urlencoded({
             extended: false

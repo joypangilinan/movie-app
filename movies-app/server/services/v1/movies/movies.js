@@ -99,21 +99,28 @@ const viewwriters = (req, res, next) => {
 }
 
 const writermovie = (req, res, next) => {
-    mongoose.connection.db
+    var searchresult = mongoose.connection.db
         .collection('movieDetails')
-        .find({ writers: req.params.writerName }, { projection: { _id: 0, title: 1, poster: 1, writers: 1 } })
-        .toArray()
-        .then(movie => {
-            if (movie == null) {
-                err = new Error('No Movies for ' + req.params.writerName + ' found')
-                err.status = 404
-                return next(err)
-            } else {
+        .find({ writers: req.params.writerName }, { projection: { "title": 1, "poster": 1, "year": 1, "genres": 1, "imdb.votes": 1, "imdb.rating": 1, "tomato.rating": 1, "rated": 1, "plot": 1, "writers": 1, "actors": 1 } })
+    searchresult.count(function (e, count) {
+        searchresult
+            .toArray(function (err, movie) {
                 posterReplace(movie)
-                res.json(movie)
-            }
-        }, (err) => next(err))
-        .catch((err) => next(err))
+                if (movie.length == 0) {
+                    noMatch = "No movies match that query, please try again."
+                    res.json(noMatch)
+                } else {
+                    posterReplace(movie)
+                    var c = movie.length
+                    var movies = {
+                        movie: movie,
+                        total: count,
+                        result: c
+                    }
+                    res.json(movies)
+                }
+            })
+    })
 }
 
 const favourite = (req, res, next) => {
@@ -213,27 +220,26 @@ const comment = (req, res, next) => {
             if (com == null) {
                 Comment.create(comment)
                     .then((result) => {
-                        req.body.userId = 'password'
+                        req.body.userId = req.user.sub
                         result.comment.push(req.body)
                         result.save()
-                        .then(results => {
-                            console.log('comment added successfully ')
-                            res.json(results)
-                        })
-                        
+                            .then(results => {
+                                console.log('comment added successfully ')
+                                res.json(results)
+                            })
+
                     }, (err) => next(err))
                     .catch((err) => next(err))
             } else {
-                // res.json(com._id)
                 Comment.findOne({ movieId: req.params.movieId })
-                .then(com => {
-                    req.body.userId = 'password'
-                    com.comment.push(req.body)
-                    com.save()
-                    .then(comment =>{
-                        res.json(comment)
+                    .then(com => {
+                        req.body.userId = req.user.sub
+                        com.comment.push(req.body)
+                        com.save()
+                            .then(comment => {
+                                res.json(comment)
+                            })
                     })
-                })
             }
         })
 }
@@ -242,7 +248,8 @@ const commentdisplay = (req, res, next) => {
     Comment.find({ movieId: req.params.movieId })
         .then(result => {
             res.json(result)
-        })
+        }, (err) => next(err))
+        .catch((err) => next(err))
 }
 
 module.exports = {
