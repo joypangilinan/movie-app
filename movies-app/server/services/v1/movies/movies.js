@@ -26,6 +26,7 @@ const displayAll = (req, res, next) => {
                         total: counts
                     }
                     res.json(movies)
+                    console.log(req)
                 })
         })
 }
@@ -173,6 +174,7 @@ const displayFavourite = (req, res, next) => {
                 .find({ _id: { $in: result.movieId } })
                 .toArray()
                 .then(result => {
+                    posterReplace(result)
                     res.json(result)
                 })
         })
@@ -220,6 +222,7 @@ const comment = (req, res, next) => {
             if (com == null) {
                 Comment.create(comment)
                     .then((result) => {
+                        req.body.nickname = req.user.nickname
                         req.body.userId = req.user.sub
                         result.comment.push(req.body)
                         result.save()
@@ -233,6 +236,7 @@ const comment = (req, res, next) => {
             } else {
                 Comment.findOne({ movieId: req.params.movieId })
                     .then(com => {
+                        req.body.nickname = req.user.nickname
                         req.body.userId = req.user.sub
                         com.comment.push(req.body)
                         com.save()
